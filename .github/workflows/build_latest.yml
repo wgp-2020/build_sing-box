@@ -21,7 +21,7 @@ jobs:
         
       - name: 编译sing-box（有构建标志）
         if: ${{ inputs.tags }}
-        run: go install -v -tags ${{ inputs.tags }} github.com/sagernet/sing-box/cmd/sing-box@latest
+        run: go install -v -tags="${{ inputs.tags }}" github.com/sagernet/sing-box/cmd/sing-box@latest
         
       - name: Create Release
         id: create_release
