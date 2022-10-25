@@ -1,0 +1,46 @@
+name: Build sing-box
+on: 
+  workflow_dispatch: #手动触发工作流
+   inputs:
+    tags:
+        description: 'tags（构建标志）'
+        required: false
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 设置go环境
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.5' #go版本
+          
+      - name: 编译sing-box（无构建标志）
+        if: ${{ !inputs.tags }}
+        run: go install -v github.com/sagernet/sing-box/cmd/sing-box@latest
+        
+      - name: 编译sing-box（有构建标志）
+        if: ${{ inputs.tags }}
+        run: go install -v -tags ${{ inputs.tags }} github.com/sagernet/sing-box/cmd/sing-box@latest
+        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: latest
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.GOPATH }}/bin/sing-box
+          asset_name: sing-box
+          asset_content_type: application/*
